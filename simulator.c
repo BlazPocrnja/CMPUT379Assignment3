@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define HASH_SIZE 1024		//2^10
+#define HASH_SIZE 1024			//2^10
+#define MEMORY_SIZE 33554432	//2^25
 
 typedef struct node{
 	unsigned int key;
@@ -42,7 +43,7 @@ node* ll_insert(node* head, node* new){
 }
 
 /**
-* TODO Free Memory
+* Delete node and free memory
 */
 node* ll_delete(node* head, node* item){
 	if(item->previous != NULL){
@@ -54,6 +55,7 @@ node* ll_delete(node* head, node* item){
 	if(item == head){
 		head = item->next;
 	}
+	free(item);
 	return head ;
 }
 
@@ -112,7 +114,14 @@ int get(unsigned int address){
 }
 
 void done(){
-
+	unsigned int i;
+	node* item;
+	for(i = 0; i < MEMORY_SIZE; ++i){
+		item = ht_search(i);
+		if(item != NULL){
+			ht_delete(item);
+		}
+	}
 }
 
 int main(){
@@ -121,5 +130,7 @@ int main(){
 		put(i, i+1);
 		printf("%d \n",get(i));
 	}
+
+	done();
 	return 0;
 }
