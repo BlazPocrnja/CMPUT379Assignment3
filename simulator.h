@@ -6,7 +6,7 @@ void process();
 
 //Simulator functions
 void init(int psize, int winsize);
-void put(unisgned int address,int value);
+void put(unsigned int address,int value);
 int get(unsigned int address);
 void done();
 
