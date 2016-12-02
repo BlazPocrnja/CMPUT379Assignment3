@@ -13,7 +13,12 @@ typedef struct node{
 } node;
 
 node *hash_table[HASH_SIZE] = {NULL};
+int page_size = 0;				//in words(32 bit)
+int window_size = 0;	
 
+/**
+* Allocates memory and assigns values to a new node struct
+*/
 node* node_new(unsigned int key, int value){
 	node* new = malloc(sizeof(node));
 	new->key = key;
@@ -43,7 +48,7 @@ node* ll_insert(node* head, node* new){
 }
 
 /**
-* Delete node and free memory
+* Remove node from linked list and free memory
 */
 node* ll_delete(node* head, node* item){
 	if(item->previous != NULL){
@@ -98,21 +103,33 @@ node* ht_search(unsigned int key){
 	return ll_search(hash_table[index],key);
 }
 
-
+/**
+* Initializes page_size and window_size
+*/
 void init(int psize, int winsize){
+	page_size = psize;
+	window_size = winsize;
 }
 
+/**
+* Insert a value into the given virtual address space
+*/
 void put(unsigned int address, int value){
 	node* new = node_new(address, value);
 	ht_insert(new);
 }
 
-
+/**
+* Get the value from a given virtual address space
+*/
 int get(unsigned int address){
 	node* item = ht_search(address);
 	return item->value;
 }
 
+/**
+* 
+*/
 void done(){
 	unsigned int i;
 	node* item;
@@ -124,13 +141,17 @@ void done(){
 	}
 }
 
-int main(){
+int main(int argc, char* argv[]){
+
+	init(atoi(argv[1]),atoi(argv[2]));
+
+	/*Test
 	int i;
 	for(i = 0; i < 10; ++i){
 		put(i, i+1);
 		printf("%d \n",get(i));
 	}
 
-	done();
+	done();*/
 	return 0;
 }
