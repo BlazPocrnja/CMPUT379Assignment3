@@ -1,3 +1,9 @@
+/**
+* Bit array code provided by...
+* Source: http://www.mathcs.emory.edu/~cheung/Courses/255/Syllabus/1-C-intro/bit-array.html
+* Date Accessed : 12/3/2016
+*/
+
 #include "simulator.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,8 +19,16 @@ typedef struct node{
 } node;
 
 node *hash_table[HASH_SIZE] = {NULL};
+
 int page_size = 0;				//in words(32 bit)
 int window_size = 0;	
+unsigned int mem_refs = 0; 
+
+int *bit_array;
+
+unsigned int *history = NULL;
+unsigned int history_size = 0;
+
 
 /**
 * Allocates memory and assigns values to a new node struct
@@ -103,18 +117,113 @@ node* ht_search(unsigned int key){
 	return ll_search(hash_table[index],key);
 }
 
+
 /**
-* Initializes page_size and window_size
+* Set bit at kth position
+*/
+void set_bit(int *A, unsigned int k ){
+	A[k/32] |= 1 << (k%32);  // Set the bit at the k-th position in A[i]
+}
+
+/**
+* Clear bit at kth position
+*/
+void clear_bit(int *A, unsigned int k){ 
+	A[k/32] &= ~(1 << (k%32));  
+}
+
+/**
+* Test bit at kth position
+* Returns 1 if set
+* 0 otherwise
+*/
+int test_bit(int *A, unsigned int k ){
+	if ( (A[k/32] & (1 << (k%32) )) != 0 ){       
+		return 1;
+	}
+	return 0;
+}
+
+/**
+* Sets all bits to 0
+*/
+void reset_bits(){
+	unsigned int n = MEMORY_SIZE/page_size;
+	unsigned int i;
+	for(i = 0; i < n; ++i){
+		clear_bit(bit_array, i);
+	}
+}
+
+/**
+* 
+*/
+void count_working_set(){
+	unsigned int sum = 0;
+	//n pages/bits to check
+	unsigned int n = MEMORY_SIZE/page_size;
+	unsigned int i;
+	for(i = 0; i < n; ++i){
+		sum += test_bit(bit_array, i);
+	}
+
+	if(history == NULL){
+		history_size = 1;
+		history = malloc(history_size*sizeof(unsigned int));
+	}
+	else{
+		++history_size;
+		history = (int*)realloc(history, history_size*sizeof(unsigned int));
+	}
+	history[history_size - 1] = sum;
+
+}
+
+/**
+* If mem_refs does not exceed window_size; increment it and set bit corresponding to address page
+* Otherwise calls count_working_set and resets bits
+*/
+void reference_page(unsigned int address){
+	//Take the floor of address/page_size (int cast does this)
+	unsigned int page = address/page_size;
+
+	if(!test_bit(bit_array,page)){
+		set_bit(bit_array,page);
+	}
+
+	++mem_refs;	
+
+	if(mem_refs >= window_size){
+		count_working_set();
+		reset_bits();
+		mem_refs = 0;
+	}
+}
+
+/**
+* Initializes page_size, window_size, mem_refs and the bit_array
 */
 void init(int psize, int winsize){
 	page_size = psize;
 	window_size = winsize;
+	mem_refs = 0;
+
+	unsigned int n = MEMORY_SIZE/page_size;
+
+	//We're using a bit array so we need to determine how many ints to allocate
+	//n pages = n bits
+	//(n bits/ x ints) = (32 bits / 1 int)
+	//Take the ceiling of x (add 1, cast to int)
+	unsigned int x = (n/32) + 1;
+
+	bit_array = (int*)calloc(x , sizeof(int));
 }
 
 /**
 * Insert a value into the given virtual address space
 */
 void put(unsigned int address, int value){
+	reference_page(address);
 	node* new = node_new(address, value);
 	ht_insert(new);
 }
@@ -123,6 +232,7 @@ void put(unsigned int address, int value){
 * Get the value from a given virtual address space
 */
 int get(unsigned int address){
+	reference_page(address);
 	node* item = ht_search(address);
 	return item->value;
 }
@@ -131,6 +241,12 @@ int get(unsigned int address){
 * 
 */
 void done(){
+
+
+
+
+
+	//Free hash_table memory
 	unsigned int i;
 	node* item;
 	for(i = 0; i < MEMORY_SIZE; ++i){
@@ -145,13 +261,21 @@ int main(int argc, char* argv[]){
 
 	init(atoi(argv[1]),atoi(argv[2]));
 
-	/*Test
-	int i;
-	for(i = 0; i < 10; ++i){
-		put(i, i+1);
-		printf("%d \n",get(i));
-	}
+	put(1,17);
+	printf("Refs: %d \n",mem_refs);
+	put(MEMORY_SIZE-5, 17);
+	printf("Refs: %d \n",mem_refs);
+	put(MEMORY_SIZE-5, 17);
+	printf("Refs: %d \n",mem_refs);
+	put(MEMORY_SIZE-5, 17);
+	printf("Refs: %d \n",mem_refs);
+	
+	printf("History: %d \n",history_size);
 
-	done();*/
+	int i;
+	for(i = 0; i < history_size; ++i){
+		printf("Sum: %d \n",history[i]);
+	}
+	
 	return 0;
 }
