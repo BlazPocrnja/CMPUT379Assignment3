@@ -156,9 +156,9 @@ void reset_bits(){
 }
 
 /**
-* 
+* Updates history of working set size
 */
-void count_working_set(){
+void update_history(){
 	unsigned int sum = 0;
 	//n pages/bits to check
 	unsigned int n = MEMORY_SIZE/page_size;
@@ -180,8 +180,9 @@ void count_working_set(){
 }
 
 /**
-* If mem_refs does not exceed window_size; increment it and set bit corresponding to address page
-* Otherwise calls count_working_set and resets bits
+* Sets corresponding page bit with given address
+* Increments mem_refs counter
+* If counter is >= window_size update history and reset bits
 */
 void reference_page(unsigned int address){
 	//Take the floor of address/page_size (int cast does this)
@@ -194,10 +195,33 @@ void reference_page(unsigned int address){
 	++mem_refs;	
 
 	if(mem_refs >= window_size){
-		count_working_set();
+		update_history();
 		reset_bits();
 		mem_refs = 0;
 	}
+}
+
+/**
+* Prints history of working set sums
+*/
+void print_history(){
+	printf("\n%d Complete Working Set(s)\n",history_size);
+	printf("---------------------\n");
+	unsigned int i;
+	for(i = 0; i < history_size; ++i){
+		printf("Working set %d had %d unique page accesses!\n", i + 1, history[i]);
+	}
+	printf("\n");
+}
+
+float avg_history(){
+	unsigned int sum = 0;
+	unsigned int i;
+	for(i = 0; i < history_size; ++i){
+		sum += history[i];
+	}
+	float avg = (float)sum/history_size;
+	return avg;
 }
 
 /**
@@ -225,6 +249,12 @@ void init(int psize, int winsize){
 void put(unsigned int address, int value){
 	reference_page(address);
 	node* new = node_new(address, value);
+
+	//If a value exists at that location overwrite the old one
+	node* item = ht_search(address);
+	if(item != NULL){
+		ht_delete(item);
+	}
 	ht_insert(new);
 }
 
@@ -234,6 +264,9 @@ void put(unsigned int address, int value){
 int get(unsigned int address){
 	reference_page(address);
 	node* item = ht_search(address);
+	if(item == NULL){
+		return 0;
+	}
 	return item->value;
 }
 
@@ -241,10 +274,15 @@ int get(unsigned int address){
 * 
 */
 void done(){
+	print_history();
+	float avg = avg_history();
+	printf("Average over all working set(s): %.2f\n\n" , avg);
 
+	//Free bit_array
+	free(bit_array);
 
-
-
+	//Free history
+	free(history);
 
 	//Free hash_table memory
 	unsigned int i;
@@ -261,21 +299,23 @@ int main(int argc, char* argv[]){
 
 	init(atoi(argv[1]),atoi(argv[2]));
 
+	put(0,17);
+	put(MEMORY_SIZE-5, 17);
+	put(1024, 100000);
+	put(MEMORY_SIZE-5, 17);
 	put(1,17);
-	printf("Refs: %d \n",mem_refs);
+	put(MEMORY_SIZE-6, 17);
 	put(MEMORY_SIZE-5, 17);
-	printf("Refs: %d \n",mem_refs);
-	put(MEMORY_SIZE-5, 17);
-	printf("Refs: %d \n",mem_refs);
-	put(MEMORY_SIZE-5, 17);
-	printf("Refs: %d \n",mem_refs);
-	
-	printf("History: %d \n",history_size);
+	put(MEMORY_SIZE-5, 22);
 
-	int i;
-	for(i = 0; i < history_size; ++i){
-		printf("Sum: %d \n",history[i]);
-	}
-	
+	printf("\n%d\n",get(1));
+	printf("\n%d\n",get(MEMORY_SIZE-5));
+
+	printf("\n%d\n",get(MEMORY_SIZE-6));
+	printf("\n%d\n",get(2024));
+
+
+	done();
+
 	return 0;
 }
