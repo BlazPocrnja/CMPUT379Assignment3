@@ -214,6 +214,9 @@ void print_history(){
 	printf("\n");
 }
 
+/**
+* Returns a float of the average number of unique pages accessed between all working sets
+*/
 float avg_history(){
 	unsigned int sum = 0;
 	unsigned int i;
@@ -271,7 +274,8 @@ int get(unsigned int address){
 }
 
 /**
-* 
+* Prints working set history, and average of page accesses over all working sets
+* Frees all dynamically allocated memory 
 */
 void done(){
 	print_history();
