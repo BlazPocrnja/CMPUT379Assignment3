@@ -5,8 +5,6 @@
 */
 
 #include "simulator.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 #define HASH_SIZE 1024			//2^10
 #define MEMORY_SIZE 33554432	//2^25
@@ -209,7 +207,7 @@ void print_history(){
 	printf("---------------------\n");
 	unsigned int i;
 	for(i = 0; i < history_size; ++i){
-		printf("Working set %d had %d unique page accesses!\n", i + 1, history[i]);
+		printf("Working set %d had %d unique page accesse(s)!\n", i + 1, history[i]);
 	}
 	printf("\n");
 }
@@ -300,26 +298,8 @@ void done(){
 }
 
 int main(int argc, char* argv[]){
-
 	init(atoi(argv[1]),atoi(argv[2]));
-
-	put(0,17);
-	put(MEMORY_SIZE-5, 17);
-	put(1024, 100000);
-	put(MEMORY_SIZE-5, 17);
-	put(1,17);
-	put(MEMORY_SIZE-6, 17);
-	put(MEMORY_SIZE-5, 17);
-	put(MEMORY_SIZE-5, 22);
-
-	printf("\n%d\n",get(1));
-	printf("\n%d\n",get(MEMORY_SIZE-5));
-
-	printf("\n%d\n",get(MEMORY_SIZE-6));
-	printf("\n%d\n",get(2024));
-
-
-	done();
+	process();
 
 	return 0;
 }

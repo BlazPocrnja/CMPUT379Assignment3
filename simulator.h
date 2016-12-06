@@ -1,6 +1,9 @@
 #ifndef simulator_h
 #define simulator_h
 
+#include <stdio.h>
+#include <stdlib.h>
+
 //Sorting process
 void process();
 
