@@ -50,7 +50,7 @@ void process()
 
     printf("\nEnter number of elements to sort: ");
     scanf ("%d", &n); // Gets amount of numbers to generate
-    printf ("\nSorting %1d elements\n", n);
+    printf ("\nHeap Sorting %1d elements\n", n);
 
     for (i = 0; i < n; i++) put(i, lrand48());    // Generating random numbers
 
