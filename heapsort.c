@@ -67,14 +67,14 @@ void process()
         downheap(n - i - 1, 0);
     }
 
-
+    /*
     // Prints data for the lulz
     printf("\nSorted: \n");
     for (i = 0; i < n; i++)
     {
         printf("%i \n", get(i));
     }
-
+	*/
 
     done(); 
 }

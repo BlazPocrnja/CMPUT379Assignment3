@@ -278,7 +278,7 @@ int get(unsigned int address){
 void done(){
 	print_history();
 	float avg = avg_history();
-	printf("Average over all working set(s): %.2f\n\n" , avg);
+	printf("Average over all working set(s): %.4f\n\n" , avg);
 
 	//Free bit_array
 	free(bit_array);

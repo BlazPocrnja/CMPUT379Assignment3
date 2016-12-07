@@ -69,11 +69,13 @@ void process()
             i--;
         }
     }
-
+    
+    /*
     printf("\nSorted: \n");
     // Printing for awesomeness
     for (i = 0; i < length; i++)
         printf("%i \n", get(i));
+    */
 
     done();
 }
